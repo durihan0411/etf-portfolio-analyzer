@@ -5,7 +5,6 @@
   "main": "TQQQ_SOXL_VXX_Comparison_Dashboard.html",
   "scripts": {
     "start": "npx serve .",
-    "build": "echo 'Static site - no build needed'",
     "dev": "npx serve . -p 3000"
   },
   "keywords": [
