@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETF 포트폴리오 최적화 분석 도구</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #00b894 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 40px 20px;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-card p {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+        
+        .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .features {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .features h3 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .features ul {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .features li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .features li:before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1.1em;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ETF 포트폴리오 최적화 분석</h1>
+        <p class="subtitle">TQQQ, SOXL, VXX ETF 상관관계 분석 및 포트폴리오 최적화 도구</p>
+        
+        <div class="dashboard-grid">
+            <a href="TQQQ_SOXL_VXX_Comparison_Dashboard.html" class="dashboard-card">
+                <span class="icon">📊</span>
+                <h3>종합 비교 대시보드</h3>
+                <p>TQQQ, SOXL, VXX 전체 비교 분석</p>
+            </a>
+            
+            <a href="TQQQ_VIX_Simple_Dashboard.html" class="dashboard-card">
+                <span class="icon">📈</span>
+                <h3>TQQQ vs VIX</h3>
+                <p>나스닥 3배 vs 변동성 지수</p>
+            </a>
+            
+            <a href="TQQQ_VXX_Portfolio_Dashboard.html" class="dashboard-card">
+                <span class="icon">⚖️</span>
+                <h3>TQQQ vs VXX</h3>
+                <p>나스닥 3배 vs VIX ETF</p>
+            </a>
+            
+            <a href="SOXL_VXX_Portfolio_Dashboard.html" class="dashboard-card">
+                <span class="icon">🚀</span>
+                <h3>SOXL vs VXX</h3>
+                <p>반도체 3배 vs VIX ETF</p>
+            </a>
+        </div>
+        
+        <div class="features">
+            <h3>주요 기능</h3>
+            <ul>
+                <li>실시간 ETF 데이터 분석</li>
+                <li>상관관계 분석 및 시각화</li>
+                <li>포트폴리오 최적화 (몬테카를로 시뮬레이션)</li>
+                <li>투자자 유형별 추천</li>
+                <li>인터랙티브 차트 및 대시보드</li>
+                <li>리스크-수익률 분석</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 페이지 로드 시 애니메이션 효과
+        window.addEventListener('load', function() {
+            const cards = document.querySelectorAll('.dashboard-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
