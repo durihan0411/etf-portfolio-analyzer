@@ -1,39 +1,29 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "*.html",
-      "use": "@vercel/static"
+      "source": "/",
+      "destination": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
     },
     {
-      "src": "*.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
+      "source": "/dashboard",
+      "destination": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
     },
     {
-      "src": "/dashboard",
-      "dest": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
+      "source": "/comparison",
+      "destination": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
     },
     {
-      "src": "/comparison",
-      "dest": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
+      "source": "/tqqq-vix",
+      "destination": "/TQQQ_VIX_Simple_Dashboard.html"
     },
     {
-      "src": "/tqqq-vix",
-      "dest": "/TQQQ_VIX_Simple_Dashboard.html"
+      "source": "/tqqq-vxx",
+      "destination": "/TQQQ_VXX_Portfolio_Dashboard.html"
     },
     {
-      "src": "/tqqq-vxx",
-      "dest": "/TQQQ_VXX_Portfolio_Dashboard.html"
-    },
-    {
-      "src": "/soxl-vxx",
-      "dest": "/SOXL_VXX_Portfolio_Dashboard.html"
+      "source": "/soxl-vxx",
+      "destination": "/SOXL_VXX_Portfolio_Dashboard.html"
     }
   ],
   "headers": [
@@ -46,5 +36,7 @@
         }
       ]
     }
-  ]
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
