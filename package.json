@@ -1,0 +1,32 @@
+{
+  "name": "etf-portfolio-analyzer",
+  "version": "1.0.0",
+  "description": "TQQQ, SOXL, VXX ETF Portfolio Optimization Analysis Tool",
+  "main": "TQQQ_SOXL_VXX_Comparison_Dashboard.html",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo 'Static site - no build needed'",
+    "dev": "npx serve . -p 3000"
+  },
+  "keywords": [
+    "etf",
+    "portfolio",
+    "optimization",
+    "tqqq",
+    "soxl",
+    "vxx",
+    "vix",
+    "finance",
+    "analysis"
+  ],
+  "author": "ETF Portfolio Analyzer",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/etf-portfolio-analyzer.git"
+  },
+  "homepage": "https://your-vercel-app.vercel.app"
+}

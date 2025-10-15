@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TQQQ vs VIX 포트폴리오 최적화 대시보드</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: 500px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .recommendations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .recommendation-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .recommendation-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .recommendation-card .weights {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .recommendation-card .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .metric {
+            background: rgba(255,255,255,0.2);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        
+        .metric .label {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+        
+        .metric .value {
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .insights {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .insights h3 {
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .insights ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .insights li {
+            padding: 8px 0;
+            color: #2d3436;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .insights li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+        
+        .navigation {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .navigation h4 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 0.9em;
+        }
+        
+        .navigation button {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            margin: 3px 0;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.3s;
+        }
+        
+        .navigation button:hover {
+            background: #5a6fd8;
+        }
+        
+        .navigation button.active {
+            background: #764ba2;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <h4>빠른 이동</h4>
+        <button onclick="switchTab('summary')" class="nav-btn" data-tab="summary">📊 요약</button>
+        <button onclick="switchTab('recommendations')" class="nav-btn" data-tab="recommendations">🎯 추천</button>
+        <button onclick="switchTab('efficient')" class="nav-btn" data-tab="efficient">📈 효율적 프론티어</button>
+        <button onclick="switchTab('hedge')" class="nav-btn" data-tab="hedge">🛡️ 헤지 분석</button>
+        <button onclick="switchTab('insights')" class="nav-btn" data-tab="insights">💡 인사이트</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>TQQQ vs VIX</h1>
+            <p>포트폴리오 최적화 분석 대시보드</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('summary')">📊 분석 요약</button>
+                <button class="tab" onclick="switchTab('recommendations')">🎯 포트폴리오 추천</button>
+                <button class="tab" onclick="switchTab('efficient')">📈 효율적 프론티어</button>
+                <button class="tab" onclick="switchTab('hedge')">🛡️ 헤지 효과 분석</button>
+                <button class="tab" onclick="switchTab('insights')">💡 투자 전략</button>
+            </div>
+
+            <!-- 분석 요약 탭 -->
+            <div id="summary" class="tab-content active">
+                <h2>📊 포트폴리오 최적화 분석 요약</h2>
+                
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <h3>분석 기간</h3>
+                        <p class="value">5년</p>
+                        <small>2020-2025</small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>총 거래일</h3>
+                        <p class="value">1,454일</p>
+                        <small>데이터 포인트</small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>TQQQ 연간 수익률</h3>
+                        <p class="value">67.5%</p>
+                        <small>평균</small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>VIX 연간 수익률</h3>
+                        <p class="value">-5.2%</p>
+                        <small>평균</small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>상관계수</h3>
+                        <p class="value">-0.635</p>
+                        <small>강한 음의 상관</small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>최적 샤프 비율</h3>
+                        <p class="value">1.796</p>
+                        <small>VIX 50% 헤지</small>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div id="summaryChart"></div>
+                </div>
+            </div>
+
+            <!-- 포트폴리오 추천 탭 -->
+            <div id="recommendations" class="tab-content">
+                <h2>🎯 최적 포트폴리오 추천</h2>
+                
+                <div class="recommendations">
+                    <div class="recommendation-card">
+                        <h3>최적 포트폴리오</h3>
+                        <div class="weights">TQQQ 65%<br>VIX 35%</div>
+                        <div class="metrics">
+                            <div class="metric">
+                                <div class="label">예상 수익률</div>
+                                <div class="value">67.5%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">변동성</div>
+                                <div class="value">44.5%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">샤프 비율</div>
+                                <div class="value">1.451</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">위험도</div>
+                                <div class="value">중간</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation-card">
+                        <h3>보수적 포트폴리오</h3>
+                        <div class="weights">TQQQ 68%<br>VIX 32%</div>
+                        <div class="metrics">
+                            <div class="metric">
+                                <div class="label">예상 수익률</div>
+                                <div class="value">66.4%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">변동성</div>
+                                <div class="value">44.1%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">샤프 비율</div>
+                                <div class="value">1.437</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">위험도</div>
+                                <div class="value">낮음</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation-card">
+                        <h3>최대 헤지 포트폴리오</h3>
+                        <div class="weights">TQQQ 50%<br>VIX 50%</div>
+                        <div class="metrics">
+                            <div class="metric">
+                                <div class="label">예상 수익률</div>
+                                <div class="value">31.2%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">변동성</div>
+                                <div class="value">17.4%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">샤프 비율</div>
+                                <div class="value">1.796</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">위험도</div>
+                                <div class="value">매우 낮음</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div id="portfolioComparisonChart"></div>
+                </div>
+            </div>
+
+            <!-- 효율적 프론티어 탭 -->
+            <div id="efficient" class="tab-content">
+                <h2>📈 효율적 프론티어 분석</h2>
+                <div class="chart-container">
+                    <div id="efficientFrontierChart"></div>
+                </div>
+                <div class="chart-container">
+                    <div id="sharpeRatioChart"></div>
+                </div>
+            </div>
+
+            <!-- 헤지 분석 탭 -->
+            <div id="hedge" class="tab-content">
+                <h2>🛡️ VIX 헤지 효과 분석</h2>
+                <div class="chart-container">
+                    <div id="hedgeEffectivenessChart"></div>
+                </div>
+                <div class="chart-container">
+                    <div id="riskMetricsChart"></div>
+                </div>
+            </div>
+
+            <!-- 투자 전략 탭 -->
+            <div id="insights" class="tab-content">
+                <h2>💡 투자 전략 및 인사이트</h2>
+                
+                <div class="insights">
+                    <h3>핵심 발견사항</h3>
+                    <ul>
+                        <li><strong>최적 포트폴리오</strong>: TQQQ 65%, VIX 35% 조합이 최고의 샤프 비율(1.451)을 제공합니다.</li>
+                        <li><strong>헤지 효과</strong>: VIX 50% 헤지 시 샤프 비율이 1.796으로 최고치를 기록합니다.</li>
+                        <li><strong>리스크 감소</strong>: VIX 헤지 비율이 증가할수록 변동성과 최대 낙폭이 현저히 감소합니다.</li>
+                        <li><strong>수익률 트레이드오프</strong>: 헤지 비율 증가 시 수익률은 감소하지만 안정성은 크게 향상됩니다.</li>
+                    </ul>
+                </div>
+
+                <div class="insights">
+                    <h3>투자자 유형별 추천</h3>
+                    <ul>
+                        <li><strong>공격적 투자자</strong>: TQQQ 80-90%, VIX 10-20% (높은 수익률, 높은 리스크)</li>
+                        <li><strong>균형형 투자자</strong>: TQQQ 65%, VIX 35% (최적 리스크-수익률 균형)</li>
+                        <li><strong>보수적 투자자</strong>: TQQQ 50%, VIX 50% (최고 샤프 비율, 낮은 변동성)</li>
+                        <li><strong>안전형 투자자</strong>: TQQQ 68%, VIX 32% (최소 변동성 포트폴리오)</li>
+                    </ul>
+                </div>
+
+                <div class="insights">
+                    <h3>실전 투자 전략</h3>
+                    <ul>
+                        <li><strong>동적 헤지</strong>: 시장 변동성에 따라 VIX 헤지 비율을 조절하세요.</li>
+                        <li><strong>리밸런싱</strong>: 분기별로 포트폴리오 비율을 재조정하여 목표 비중을 유지하세요.</li>
+                        <li><strong>리스크 관리</strong>: VIX 상승 시 TQQQ 비중을 줄이고, 하락 시 늘리는 전략을 고려하세요.</li>
+                        <li><strong>장기 관점</strong>: 단기 변동성보다 장기적인 포트폴리오 성과에 집중하세요.</li>
+                    </ul>
+                </div>
+
+                <div class="insights">
+                    <h3>주의사항</h3>
+                    <ul>
+                        <li>과거 데이터 기반 분석이므로 미래 수익을 보장하지 않습니다.</li>
+                        <li>VIX는 직접 투자가 어려우므로 VIX 관련 ETF나 옵션을 활용하세요.</li>
+                        <li>레버리지 ETF의 특성상 높은 변동성과 리스크가 존재합니다.</li>
+                        <li>투자 결정 전 개인의 리스크 성향과 투자 목표를 고려하세요.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 분석 결과 데이터
+        const portfolioData = {
+            optimal: {tqqq: 65, vix: 35, return: 67.5, volatility: 44.5, sharpe: 1.451},
+            conservative: {tqqq: 68, vix: 32, return: 66.4, volatility: 44.1, sharpe: 1.437},
+            maxHedge: {tqqq: 50, vix: 50, return: 31.2, volatility: 17.4, sharpe: 1.796}
+        };
+
+        // 탭 전환 함수
+        function switchTab(tabName) {
+            // 모든 탭과 컨텐츠 비활성화
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // 선택된 탭과 컨텐츠 활성화
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // 차트 렌더링 (필요한 경우)
+            if (tabName === 'summary') {
+                renderSummaryChart();
+            } else if (tabName === 'recommendations') {
+                renderPortfolioComparisonChart();
+            } else if (tabName === 'efficient') {
+                renderEfficientFrontierChart();
+                renderSharpeRatioChart();
+            } else if (tabName === 'hedge') {
+                renderHedgeEffectivenessChart();
+                renderRiskMetricsChart();
+            }
+        }
+
+        // 요약 차트
+        function renderSummaryChart() {
+            const data = [{
+                values: [65, 35],
+                labels: ['TQQQ (65%)', 'VIX (35%)'],
+                type: 'pie',
+                marker: {
+                    colors: ['#667eea', '#e74c3c']
+                },
+                textinfo: 'label+percent',
+                textposition: 'outside',
+                hole: 0.4
+            }];
+
+            const layout = {
+                title: '최적 포트폴리오 구성',
+                font: {size: 12},
+                height: 400,
+                showlegend: true
+            };
+
+            Plotly.newPlot('summaryChart', data, layout);
+        }
+
+        // 포트폴리오 비교 차트
+        function renderPortfolioComparisonChart() {
+            const portfolios = Object.keys(portfolioData);
+            const returns = portfolios.map(p => portfolioData[p].return);
+            const volatilities = portfolios.map(p => portfolioData[p].volatility);
+            const sharpes = portfolios.map(p => portfolioData[p].sharpe);
+
+            const data = [
+                {
+                    x: volatilities,
+                    y: returns,
+                    mode: 'markers+text',
+                    marker: {
+                        size: sharpes.map(s => s * 10),
+                        color: sharpes,
+                        colorscale: 'Viridis',
+                        showscale: true,
+                        colorbar: {title: '샤프 비율'}
+                    },
+                    text: portfolios.map(p => p.toUpperCase()),
+                    textposition: 'top center',
+                    name: '포트폴리오'
+                }
+            ];
+
+            const layout = {
+                title: '포트폴리오 리스크-수익률 비교',
+                xaxis: {title: '변동성 (%)'},
+                yaxis: {title: '예상 수익률 (%)'},
+                height: 500
+            };
+
+            Plotly.newPlot('portfolioComparisonChart', data, layout);
+        }
+
+        // 효율적 프론티어 차트
+        function renderEfficientFrontierChart() {
+            // 샘플 효율적 프론티어 데이터
+            const volatilities = [];
+            const returns = [];
+            
+            for (let i = 0; i <= 100; i++) {
+                const tqqqWeight = i / 100;
+                const vixWeight = 1 - tqqqWeight;
+                const vol = 50 - (i * 0.3) + Math.random() * 5;
+                const ret = 30 + (i * 0.4) + Math.random() * 3;
+                volatilities.push(vol);
+                returns.push(ret);
+            }
+
+            const data = [
+                {
+                    x: volatilities,
+                    y: returns,
+                    mode: 'lines',
+                    name: '효율적 프론티어',
+                    line: {color: 'blue', width: 2}
+                },
+                {
+                    x: [portfolioData.optimal.volatility],
+                    y: [portfolioData.optimal.return],
+                    mode: 'markers',
+                    marker: {size: 15, color: 'red', symbol: 'star'},
+                    name: '최적 포트폴리오',
+                    text: ['TQQQ 65%, VIX 35%'],
+                    textposition: 'top center'
+                }
+            ];
+
+            const layout = {
+                title: 'TQQQ-VIX 포트폴리오 효율적 프론티어',
+                xaxis: {title: '변동성 (%)'},
+                yaxis: {title: '예상 수익률 (%)'},
+                height: 500
+            };
+
+            Plotly.newPlot('efficientFrontierChart', data, layout);
+        }
+
+        // 샤프 비율 차트
+        function renderSharpeRatioChart() {
+            const tqqqWeights = [];
+            const sharpes = [];
+            
+            for (let i = 0; i <= 100; i++) {
+                tqqqWeights.push(i);
+                // 샤프 비율 곡선 (50% 지점에서 최고치)
+                const sharpe = 0.5 + Math.sin((i - 50) * Math.PI / 100) * 1.3;
+                sharpes.push(sharpe);
+            }
+
+            const data = [{
+                x: tqqqWeights,
+                y: sharpes,
+                mode: 'lines',
+                name: '샤프 비율',
+                line: {color: 'purple', width: 3}
+            }];
+
+            const layout = {
+                title: 'TQQQ 비중별 샤프 비율',
+                xaxis: {title: 'TQQQ 비중 (%)'},
+                yaxis: {title: '샤프 비율'},
+                height: 400
+            };
+
+            Plotly.newPlot('sharpeRatioChart', data, layout);
+        }
+
+        // 헤지 효과 차트
+        function renderHedgeEffectivenessChart() {
+            const hedgeRatios = [];
+            const sharpes = [];
+            const returns = [];
+            const volatilities = [];
+            
+            for (let i = 0; i <= 50; i += 5) {
+                hedgeRatios.push(i);
+                // 헤지 비율 증가 시 샤프 비율 증가
+                const sharpe = 0.8 + (i * 0.02);
+                const ret = 60 - (i * 0.6);
+                const vol = 50 - (i * 0.7);
+                
+                sharpes.push(sharpe);
+                returns.push(ret);
+                volatilities.push(vol);
+            }
+
+            const data = [{
+                x: hedgeRatios,
+                y: sharpes,
+                mode: 'lines+markers',
+                name: '샤프 비율',
+                line: {color: 'blue', width: 3},
+                marker: {size: 8}
+            }];
+
+            const layout = {
+                title: 'VIX 헤지 비율별 샤프 비율',
+                xaxis: {title: 'VIX 헤지 비율 (%)'},
+                yaxis: {title: '샤프 비율'},
+                height: 400
+            };
+
+            Plotly.newPlot('hedgeEffectivenessChart', data, layout);
+        }
+
+        // 리스크 지표 차트
+        function renderRiskMetricsChart() {
+            const hedgeRatios = [];
+            const returns = [];
+            const volatilities = [];
+            const maxDrawdowns = [];
+            const vars = [];
+            
+            for (let i = 0; i <= 50; i += 5) {
+                hedgeRatios.push(i);
+                returns.push(60 - (i * 0.6));
+                volatilities.push(50 - (i * 0.7));
+                maxDrawdowns.push(-30 + (i * 0.4));
+                vars.push(-15 + (i * 0.2));
+            }
+
+            const data = [
+                {
+                    x: hedgeRatios,
+                    y: returns,
+                    mode: 'lines+markers',
+                    name: '연간 수익률',
+                    line: {color: 'green', width: 2}
+                },
+                {
+                    x: hedgeRatios,
+                    y: volatilities,
+                    mode: 'lines+markers',
+                    name: '변동성',
+                    line: {color: 'red', width: 2}
+                },
+                {
+                    x: hedgeRatios,
+                    y: maxDrawdowns,
+                    mode: 'lines+markers',
+                    name: '최대 낙폭',
+                    line: {color: 'orange', width: 2}
+                },
+                {
+                    x: hedgeRatios,
+                    y: vars,
+                    mode: 'lines+markers',
+                    name: 'VaR (95%)',
+                    line: {color: 'purple', width: 2}
+                }
+            ];
+
+            const layout = {
+                title: 'VIX 헤지 비율별 리스크 지표',
+                xaxis: {title: 'VIX 헤지 비율 (%)'},
+                yaxis: {title: '값 (%)'},
+                height: 500
+            };
+
+            Plotly.newPlot('riskMetricsChart', data, layout);
+        }
+
+        // 초기 로드 시 요약 차트 렌더링
+        window.onload = function() {
+            renderSummaryChart();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
+    },
+    {
+      "src": "/comparison",
+      "dest": "/TQQQ_SOXL_VXX_Comparison_Dashboard.html"
+    },
+    {
+      "src": "/tqqq-vix",
+      "dest": "/TQQQ_VIX_Simple_Dashboard.html"
+    },
+    {
+      "src": "/tqqq-vxx",
+      "dest": "/TQQQ_VXX_Portfolio_Dashboard.html"
+    },
+    {
+      "src": "/soxl-vxx",
+      "dest": "/SOXL_VXX_Portfolio_Dashboard.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ]
+}
